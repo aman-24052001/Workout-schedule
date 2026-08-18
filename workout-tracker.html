@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Session</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#060810;
+    --panel:#0d1120;
+    --line:#1c2135;
+    --text:#e7e8ee;
+    --dim:#8b90a6;
+    --gold:#fbbf24;
+    --good:#4ade80;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    padding:28px 18px 60px;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .eyebrow{ color:var(--gold); font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+  h1{ font-family:'Fraunces', serif; font-weight:700; font-size:34px; margin:6px 0 2px; }
+  .sub{ color:var(--dim); font-size:13px; margin-bottom:18px; }
+
+  .tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .tab{
+    flex:1; text-align:center; padding:9px 4px; border:1px solid var(--line); border-radius:8px;
+    font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim);
+    cursor:pointer; background:transparent; font-family:'JetBrains Mono', monospace;
+  }
+  .tab.active{ border-color:var(--gold); color:var(--gold); background:rgba(251,191,36,0.08); }
+
+  .dots{ display:flex; gap:8px; margin-bottom:20px; }
+  .dot{
+    flex:1; text-align:center; padding:8px 4px; border:1px solid var(--line); border-radius:8px;
+    font-size:11px; letter-spacing:.06em; color:var(--dim); cursor:pointer; background:transparent;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .dot.active{ border-color:var(--gold); color:var(--gold); background:rgba(251,191,36,0.08); }
+
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  .panel h2{ font-family:'Fraunces', serif; font-size:17px; font-weight:500; margin-bottom:12px; color:var(--text); }
+
+  .row{ padding:14px 0; border-top:1px solid var(--line); }
+  .row:first-of-type{ border-top:none; }
+  .row-top{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  .row-name{ font-size:14px; }
+  .row-detail{ font-size:11px; color:var(--dim); display:block; margin-top:2px; }
+  .row-vol{ font-size:12px; color:var(--gold); white-space:nowrap; text-align:right; }
+
+  label{ font-size:9px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:3px; }
+  input, select{
+    width:100%; background:#060810; border:1px solid var(--line); border-radius:6px;
+    color:var(--text); font-family:'JetBrains Mono', monospace; font-size:13px; padding:7px 8px;
+  }
+  input:focus, select:focus{ outline:none; border-color:var(--gold); }
+  input::placeholder{ color:#4a4f66; }
+
+  .ex-equip{ margin-top:10px; max-width:160px; }
+
+  .set-row{ display:grid; grid-template-columns:44px 1fr 1fr; gap:8px; align-items:end; margin-top:8px; }
+  .set-row .set-label{ font-size:11px; color:var(--dim); padding-bottom:7px; }
+
+  .add-set-btn{
+    margin-top:10px; background:transparent; border:1px dashed var(--line); color:var(--dim);
+    border-radius:6px; padding:7px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; cursor:pointer; width:100%;
+  }
+  .add-set-btn:active{ border-color:var(--gold); color:var(--gold); }
+
+  .bw-row{ display:flex; gap:8px; align-items:flex-end; }
+  .bw-row > div:first-child{ flex:1; }
+  .bw-row select{ width:70px; }
+
+  .btn{
+    border:1px solid var(--gold); color:var(--gold); background:rgba(251,191,36,0.08);
+    border-radius:8px; padding:10px 16px; font-family:'JetBrains Mono', monospace; font-size:12px;
+    letter-spacing:.06em; text-transform:uppercase; cursor:pointer;
+  }
+  .btn:active{ background:rgba(251,191,36,0.18); }
+  .btn-ghost{ border-color:var(--line); color:var(--dim); background:transparent; }
+  .btn-row{ display:flex; gap:10px; align-items:center; margin-top:14px; }
+  .status{ font-size:11px; color:var(--good); }
+
+  .rest-note{ font-size:14px; line-height:1.6; color:var(--text); padding:6px 0 4px; }
+  .rest-note .gold{ color:var(--gold); }
+  .preview-note{ font-size:11px; color:var(--dim); padding-top:10px; border-top:1px solid var(--line); margin-top:4px; }
+
+  .rule{ font-size:12px; color:var(--dim); line-height:1.6; padding:14px 0; }
+  .rule .gold{ color:var(--gold); }
+  .foot{ font-size:11px; color:var(--dim); line-height:1.7; padding-top:4px; }
+  .foot .gold{ color:var(--gold); }
+
+  table{ width:100%; border-collapse:collapse; font-size:12px; }
+  th{ text-align:left; color:var(--dim); font-weight:500; font-size:10px; text-transform:uppercase; letter-spacing:.05em; padding:6px 4px; border-bottom:1px solid var(--line); }
+  td{ padding:7px 4px; border-bottom:1px solid var(--line); }
+  td.num, th.num{ text-align:right; color:var(--gold); }
+  .empty{ font-size:12px; color:var(--dim); padding:8px 0; }
+  .ex-block{ margin-bottom:16px; }
+  .ex-block:last-child{ margin-bottom:0; }
+  .ex-block h3{ font-size:13px; margin-bottom:6px; color:var(--text); font-weight:500; }
+</style>
+</head>
+<body>
+
+  <div class="eyebrow" id="dateLabel">—</div>
+  <h1 id="dayTitle">—</h1>
+  <div class="sub" id="dayFocus">—</div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabToday">Today</button>
+    <button class="tab" id="tabProgress">Progress</button>
+  </div>
+
+  <div id="todayView">
+    <div class="dots" id="dots"></div>
+    <div id="content"></div>
+  </div>
+
+  <div id="progressView" style="display:none;"></div>
+
+  <div class="panel" id="ruleCard">
+    <h2>Sets & Reps Rule</h2>
+    <div class="rule">
+      Main lifts <span class="gold">3×6–10</span> · secondary <span class="gold">2–3×8–15</span> · isolation <span class="gold">2–3×10–20</span> · core <span class="gold">2–3×10–15</span> · planks <span class="gold">2×30–45s</span>.<br><br>
+      Stop most sets with <span class="gold">1–3 clean reps</span> left. When every set reaches the top of its rep range, add weight next week.
+    </div>
+  </div>
+
+  <div class="foot" id="footCard">
+    Protein target: <span class="gold">0.8–1g / lb</span> of goal bodyweight, floor 150g/day.<br>
+    Steps: find your 7-day average, <span class="gold">+1,000/day</span> until 7–10k, busy-week floor 6,000/day.
+  </div>
+
+<script>
+const PROGRAM_START = new Date(2026, 7, 17); // Aug 17 2026 = Day 1
+const DAY0 = new Date(2026, 7, 16);          // Aug 16 2026 = Day 0
+
+const upperWarmup = [
+  ["Easy Cardio","raise body temperature without fatigue","3–5 min"],
+  ["Band Lat Stretch","open lats before pressing or pulling","30–45s / side"],
+  ["Overhead Triceps Stretch","open the long head before presses","30–45s / side"],
+  ["Band Pull-Apart","upper back wakes up first","2×15–20"],
+  ["Scap Push-Up","shoulder blades move before load","2×8–12"],
+  ["Band External Rotation","rotator cuff control","2×10–15 / side"],
+  ["Face Pull / Rear Delt Fly","rear delts activation","1–2×12–20"],
+  ["Ramp-Up Sets for First Lift","rehearse the exact lift before working weight","Light×12 / Med×6 / Work×6–10"]
+];
+
+const lowerWarmup = [
+  ["Easy Cardio","raise body temperature without fatigue","3–5 min"],
+  ["Bodyweight Squat","groove depth and knee tracking","2×10"],
+  ["Glute Bridge","switch glutes on before leg work","2×10–15"],
+  ["Leg Swings","hips forward/back and side to side","10 F/B + 10 S/S"],
+  ["Ankle Rocks","ankles ready for squats and lunges","10 / side"],
+  ["Hip Flexor Raise","front hip control before loading","2×10 / side"],
+  ["Tib Raise","lower-leg prep for knees and ankles","2×15–20"],
+  ["Glute Med Wall Hold","hip stability before single-leg work","ISO 45s / side"],
+  ["Walking Lunge / Split Squat","rehearse the lower-body pattern","1–2×8 / side"],
+  ["Ramp-Up Sets for First Lift","build up before first working set","Light×12 / Med×8 / Work×6–10"]
+];
+
+const days = {
+  1: { focus: "Chest / Biceps / Abs", warmup: upperWarmup, lifts: [
+      ["Incline Dumbbell Press","main lift","3×6–10"],
+      ["Flat Dumbbell Press","secondary lift","2–3×8–15"],
+      ["Incline Dumbbell Curl","isolation","2–3×10–20"],
+      ["Hammer Curl","isolation","2–3×10–20"],
+      ["Cable Crunch","core","2–3×10–15"],
+      ["Plank or Dead Bug","core","2×30–45s"]
+    ]},
+  2: { focus: "Back / Triceps / Delts", warmup: upperWarmup, lifts: [
+      ["Lat Pulldown","main lift","3×6–10"],
+      ["Chest-Supported Row","secondary lift","2–3×8–15"],
+      ["Cable Pressdown","isolation","2–3×10–20"],
+      ["Overhead Extension","isolation","2–3×10–20"],
+      ["Lateral Raise","isolation","2–3×10–20"],
+      ["Rear Delt Fly","isolation","2–3×10–20"]
+    ]},
+  3: { focus: "Legs / Posterior Chain / Core", warmup: lowerWarmup, lifts: [
+      ["Squat, Hack Squat, or Leg Press","main lift","3×6–10"],
+      ["Romanian Deadlift","secondary lift","2–3×8–15"],
+      ["Split Squat","secondary lift","2–3×8–15"],
+      ["Hamstring Curl","isolation","2–3×10–20"],
+      ["Calf Raise","isolation","2–3×10–20"],
+      ["Pallof Press or Back Extension","core","2–3×10–15"]
+    ]}
+};
+
+const EQUIPMENT = ["Dumbbell","Barbell","Machine","Cable","Bodyweight","Band","Other"];
+
+// ---------- Local storage shim ----------
+// Mimics the window.storage API (get/set/delete/list) using the browser's
+// own localStorage, so this file works standalone when opened directly
+// (e.g. from Chrome on your phone), with no server or account needed.
+// Data is saved only on this device, in this browser.
+const LS_PREFIX = 'workout-tracker::';
+window.storage = {
+  async get(key){
+    const raw = localStorage.getItem(LS_PREFIX + key);
+    if (raw === null) throw new Error('Key not found: ' + key);
+    return { key, value: raw, shared: false };
+  },
+  async set(key, value){
+    localStorage.setItem(LS_PREFIX + key, value);
+    return { key, value, shared: false };
+  },
+  async delete(key){
+    const existed = localStorage.getItem(LS_PREFIX + key) !== null;
+    localStorage.removeItem(LS_PREFIX + key);
+    return { key, deleted: existed, shared: false };
+  },
+  async list(prefix){
+    const p = LS_PREFIX + (prefix || '');
+    const keys = [];
+    for (let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (k && k.startsWith(p)) keys.push(k.slice(LS_PREFIX.length));
+    }
+    return { keys, prefix, shared: false };
+  }
+};
+
+function dateOnly(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function fmtKey(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function getDayNumber(date){
+  const d = dateOnly(date);
+  if (d.getTime() === DAY0.getTime()) return 0;
+  if (d < PROGRAM_START) return 0;
+  const diffDays = Math.round((d - PROGRAM_START) / 86400000);
+  return (diffDays % 3) + 1;
+}
+function parseDefaultSetCount(vol){
+  const m = vol.match(/(\d+)(?:–(\d+))?×/);
+  if (m) return m[2] ? parseInt(m[2],10) : parseInt(m[1],10);
+  return 3;
+}
+
+const todayDate = new Date();
+const todayDayNum = getDayNumber(todayDate);
+const todayKey = fmtKey(todayDate);
+let savedEntry = null;
+let setCounts = {};
+
+function renderPlanRows(items){
+  return items.map(([name, detail, vol]) => `
+    <div class="row">
+      <div class="row-top">
+        <div><div class="row-name">${name}</div><span class="row-detail">${detail}</span></div>
+        <div class="row-vol">${vol}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderLoggableRows(items, prefill){
+  setCounts = {};
+  return items.map(([name, detail, vol], i) => {
+    const saved = (prefill && prefill.exercises && prefill.exercises[name]) || {};
+    const savedSets = saved.sets || [];
+    const defaultCount = parseDefaultSetCount(vol);
+    const rowCount = Math.max(defaultCount, savedSets.length);
+    setCounts[i] = rowCount;
+    const equipOpts = EQUIPMENT.map(e => `<option value="${e}" ${saved.equipment===e?'selected':''}>${e}</option>`).join('');
+    let setsHtml = '';
+    for (let j=0; j<rowCount; j++){
+      const sv = savedSets[j] || {};
+      setsHtml += `
+        <div class="set-row">
+          <div class="set-label">Set ${j+1}</div>
+          <div><label>Weight (kg)</label><input type="number" step="0.5" min="0" id="ex_${i}_set_${j}_w" value="${sv.weight ?? ''}" placeholder="kg"></div>
+          <div><label>Reps</label><input type="number" min="0" id="ex_${i}_set_${j}_r" value="${sv.reps ?? ''}" placeholder="reps"></div>
+        </div>`;
+    }
+    return `
+    <div class="row" data-exname="${name}">
+      <div class="row-top">
+        <div><div class="row-name">${name}</div><span class="row-detail">${detail}</span></div>
+        <div class="row-vol">${vol}</div>
+      </div>
+      <div class="ex-equip"><label>Equipment</label><select id="ex_${i}_equip">${equipOpts}</select></div>
+      <div id="ex_${i}_sets">${setsHtml}</div>
+      <button type="button" class="add-set-btn" data-idx="${i}">+ Add set</button>
+    </div>`;
+  }).join('');
+}
+
+function addSetRow(i){
+  setCounts[i] = (setCounts[i] || 0) + 1;
+  const n = setCounts[i];
+  const wrap = document.getElementById('ex_' + i + '_sets');
+  const row = document.createElement('div');
+  row.className = 'set-row';
+  row.innerHTML = `
+    <div class="set-label">Set ${n}</div>
+    <div><label>Weight (kg)</label><input type="number" step="0.5" min="0" id="ex_${i}_set_${n-1}_w" placeholder="kg"></div>
+    <div><label>Reps</label><input type="number" min="0" id="ex_${i}_set_${n-1}_r" placeholder="reps"></div>`;
+  wrap.appendChild(row);
+}
+
+function renderToday(dayNum, prefill){
+  const dateLabel = document.getElementById('dateLabel');
+  const dayTitle = document.getElementById('dayTitle');
+  const dayFocus = document.getElementById('dayFocus');
+  const content = document.getElementById('content');
+
+  dateLabel.textContent = "Today · " + todayDate.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'});
+
+  if (dayNum === 0){
+    dayTitle.textContent = "Day 0";
+    dayFocus.textContent = "Rest / Active Recovery";
+    content.innerHTML = `
+      <div class="panel">
+        <h2>Log</h2>
+        <div class="rest-note">Walked <span class="gold">5 km</span>. No lifting — program starts tomorrow.</div>
+      </div>`;
+    return;
+  }
+
+  const day = days[dayNum];
+  dayTitle.textContent = "Day " + dayNum;
+  dayFocus.textContent = day.focus;
+  const bw = (prefill && prefill.bodyweight) || {};
+  content.innerHTML = `
+    <div class="panel">
+      <h2>Morning Weigh-In</h2>
+      <div class="bw-row">
+        <div><label>Bodyweight</label><input type="number" step="0.1" min="0" id="bw_val" value="${bw.value ?? ''}" placeholder="e.g. 78.4"></div>
+        <select id="bw_unit"><option value="kg" ${bw.unit!=='lb'?'selected':''}>kg</option><option value="lb" ${bw.unit==='lb'?'selected':''}>lb</option></select>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Warm-Up · 5–8 min</h2>
+      ${renderPlanRows(day.warmup)}
+    </div>
+    <div class="panel">
+      <h2>Session</h2>
+      ${renderLoggableRows(day.lifts, prefill)}
+      <div class="btn-row">
+        <button class="btn" id="saveBtn">Save Today's Log</button>
+        <button class="btn btn-ghost" id="clearBtn">Clear</button>
+        <span class="status" id="saveStatus"></span>
+      </div>
+    </div>`;
+
+  content.querySelectorAll('.add-set-btn').forEach(btn => {
+    btn.addEventListener('click', () => addSetRow(parseInt(btn.dataset.idx, 10)));
+  });
+  document.getElementById('saveBtn').addEventListener('click', () => saveToday(dayNum, day.lifts));
+  document.getElementById('clearBtn').addEventListener('click', clearToday);
+}
+
+function renderPreview(dayNum){
+  const dateLabel = document.getElementById('dateLabel');
+  const dayTitle = document.getElementById('dayTitle');
+  const dayFocus = document.getElementById('dayFocus');
+  const content = document.getElementById('content');
+
+  dateLabel.textContent = "Preview";
+
+  if (dayNum === 0){
+    dayTitle.textContent = "Day 0";
+    dayFocus.textContent = "Rest / Active Recovery";
+    content.innerHTML = `<div class="panel"><h2>Log</h2><div class="rest-note">Walked <span class="gold">5 km</span>. No lifting — program starts tomorrow.</div></div>`;
+    return;
+  }
+
+  const day = days[dayNum];
+  dayTitle.textContent = "Day " + dayNum;
+  dayFocus.textContent = day.focus;
+  content.innerHTML = `
+    <div class="panel"><h2>Warm-Up · 5–8 min</h2>${renderPlanRows(day.warmup)}</div>
+    <div class="panel">
+      <h2>Session</h2>
+      ${renderPlanRows(day.lifts)}
+      <div class="preview-note">Preview only — logging is available on your actual training day.</div>
+    </div>`;
+}
+
+function renderDots(activeDay){
+  const dots = document.getElementById('dots');
+  const labels = {0:"Day 0", 1:"Day 1", 2:"Day 2", 3:"Day 3"};
+  const order = todayDayNum === 0 ? [0,1,2,3] : [1,2,3];
+  dots.innerHTML = order.map(n => `<button class="dot ${n===activeDay?'active':''}" data-day="${n}">${labels[n]}</button>`).join('');
+  dots.querySelectorAll('.dot').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n = parseInt(btn.dataset.day, 10);
+      if (n === todayDayNum) renderToday(n, savedEntry);
+      else renderPreview(n);
+      dots.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+}
+
+async function saveToday(dayNum, lifts){
+  const status = document.getElementById('saveStatus');
+  status.textContent = 'Saving…';
+  status.style.color = 'var(--dim)';
+  try{
+    const entry = {
+      date: todayKey,
+      day: dayNum,
+      bodyweight: {
+        value: document.getElementById('bw_val').value || null,
+        unit: document.getElementById('bw_unit').value
+      },
+      exercises: {}
+    };
+    lifts.forEach((ex, i) => {
+      const equip = document.getElementById('ex_' + i + '_equip').value;
+      const count = setCounts[i] || 0;
+      const sets = [];
+      for (let j=0; j<count; j++){
+        const wEl = document.getElementById(`ex_${i}_set_${j}_w`);
+        const rEl = document.getElementById(`ex_${i}_set_${j}_r`);
+        if (!wEl || !rEl) continue;
+        const w = wEl.value, r = rEl.value;
+        if (w || r) sets.push({ weight: w || null, reps: r || null });
+      }
+      if (sets.length) entry.exercises[ex[0]] = { equipment: equip, unit: 'kg', sets };
+    });
+    await window.storage.set('entries:' + todayKey, JSON.stringify(entry), false);
+    savedEntry = entry;
+    status.textContent = 'Saved ✓';
+    status.style.color = 'var(--good)';
+  }catch(err){
+    status.textContent = 'Save failed — try again';
+    status.style.color = '#f87171';
+    console.error(err);
+  }
+}
+
+async function clearToday(){
+  if (!confirm("Clear today's log entry?")) return;
+  try{
+    await window.storage.delete('entries:' + todayKey, false);
+  }catch(err){ /* key may not exist yet, ignore */ }
+  savedEntry = null;
+  renderToday(todayDayNum, null);
+}
+
+async function loadToday(){
+  try{
+    const res = await window.storage.get('entries:' + todayKey, false);
+    savedEntry = res ? JSON.parse(res.value) : null;
+  }catch(err){
+    savedEntry = null;
+  }
+  renderToday(todayDayNum, savedEntry);
+  renderDots(todayDayNum);
+}
+
+// ---------- Progress view ----------
+function formatSets(sets, unit){
+  if (!sets || !sets.length) return '—';
+  return sets.map(s => `${s.weight ?? '–'}${unit}×${s.reps ?? '–'}`).join(' · ');
+}
+
+async function loadProgress(){
+  const view = document.getElementById('progressView');
+  view.innerHTML = `<div class="panel"><div class="empty">Loading…</div></div>`;
+  let entries = [];
+  try{
+    const listRes = await window.storage.list('entries:', false);
+    const keys = (listRes && listRes.keys) ? listRes.keys.slice().sort().reverse().slice(0, 60) : [];
+    for (const k of keys){
+      try{
+        const r = await window.storage.get(k, false);
+        if (r && r.value) entries.push(JSON.parse(r.value));
+      }catch(e){ /* skip unreadable entry */ }
+    }
+  }catch(err){
+    view.innerHTML = `<div class="panel"><div class="empty">Couldn't load progress data.</div></div>`;
+    return;
+  }
+
+  if (entries.length === 0){
+    view.innerHTML = `<div class="panel"><h2>Progress</h2><div class="empty">No entries logged yet. Save today's session to start tracking.</div></div>`;
+    return;
+  }
+
+  entries.sort((a,b) => a.date.localeCompare(b.date)); // oldest -> newest
+
+  const bwRows = entries.filter(e => e.bodyweight && e.bodyweight.value)
+    .slice().reverse()
+    .map(e => `<tr><td>${e.date}</td><td class="num">${e.bodyweight.value} ${e.bodyweight.unit||'kg'}</td></tr>`).join('');
+
+  const exMap = {};
+  entries.forEach(e => {
+    if (!e.exercises) return;
+    Object.keys(e.exercises).forEach(name => {
+      if (!exMap[name]) exMap[name] = [];
+      const d = e.exercises[name];
+      exMap[name].push({ date: e.date, equipment: d.equipment, unit: d.unit || 'kg', sets: d.sets || [] });
+    });
+  });
+
+  const exBlocks = Object.keys(exMap).sort().map(name => {
+    const rows = exMap[name].map(r => `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.equipment || '—'}</td>
+        <td class="num">${formatSets(r.sets, r.unit)}</td>
+      </tr>`).join('');
+    return `
+      <div class="ex-block">
+        <h3>${name}</h3>
+        <table>
+          <tr><th>Date</th><th>Equip</th><th class="num">Sets (wt×reps)</th></tr>
+          ${rows}
+        </table>
+      </div>`;
+  }).join('');
+
+  view.innerHTML = `
+    <div class="panel">
+      <h2>Bodyweight</h2>
+      ${bwRows ? `<table><tr><th>Date</th><th class="num">Weight</th></tr>${bwRows}</table>` : `<div class="empty">No bodyweight entries yet.</div>`}
+    </div>
+    <div class="panel">
+      <h2>Exercise History</h2>
+      ${exBlocks || `<div class="empty">No exercises logged yet.</div>`}
+    </div>`;
+}
+
+// ---------- Tabs ----------
+document.getElementById('tabToday').addEventListener('click', () => {
+  document.getElementById('tabToday').classList.add('active');
+  document.getElementById('tabProgress').classList.remove('active');
+  document.getElementById('todayView').style.display = 'block';
+  document.getElementById('progressView').style.display = 'none';
+  document.getElementById('ruleCard').style.display = 'block';
+  document.getElementById('footCard').style.display = 'block';
+});
+document.getElementById('tabProgress').addEventListener('click', () => {
+  document.getElementById('tabProgress').classList.add('active');
+  document.getElementById('tabToday').classList.remove('active');
+  document.getElementById('todayView').style.display = 'none';
+  document.getElementById('progressView').style.display = 'block';
+  document.getElementById('ruleCard').style.display = 'none';
+  document.getElementById('footCard').style.display = 'none';
+  loadProgress();
+});
+
+loadToday();
+</script>
+</body>
+</html>
